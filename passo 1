@@ -1,1 +1,149 @@
+import React, { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+
+export default function ItemManager() {
+  const [items, setItems] = useState([]);
+  const [search, setSearch] = useState("");
+  const [searchRef, setSearchRef] = useState(""); // Busca por referência
+  const [nextId, setNextId] = useState(1);
+  const [lastAddedId, setLastAddedId] = useState(null);
+  const [view, setView] = useState("add"); // Estado para alternar entre abas
+  const [form, setForm] = useState({ descricao: "", valorCusto: "", valorVenda: "", referencia: "", marca: "" });
+
+  const addItem = () => {
+    const newItem = {
+      id: nextId,
+      ...form,
+    };
+
+    setItems([...items, newItem]);
+    setNextId(nextId + 1);
+    setLastAddedId(nextId);
+    setForm({ descricao: "", valorCusto: "", valorVenda: "", referencia: "", marca: "" });
+  };
+
+  const filteredItem = items.find((item) => item.id.toString() === search);
+  const filteredItemsByRef = items.filter((item) => item.referencia.includes(searchRef));
+
+  return (
+    <div className="p-4 space-y-4">
+      {/* Botões para alternar entre as abas */}
+      <div className="flex space-x-2">
+        <Button onClick={() => setView("add")}>Adicionar Item</Button>
+        <Button onClick={() => setView("viewAll")}>Ver Todos os Itens</Button>
+        <Button onClick={() => setView("reports")}>Relatórios</Button>
+      </div>
+
+      {/* Aba de Cadastro de Itens */}
+      {view === "add" && (
+        <>
+          <div className="grid grid-cols-2 gap-4">
+            <Input placeholder="Descrição" value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} />
+            <Input placeholder="Marca" value={form.marca} onChange={(e) => setForm({ ...form, marca: e.target.value })} />
+            <Input placeholder="Valor Custo" value={form.valorCusto} onChange={(e) => setForm({ ...form, valorCusto: e.target.value })} />
+            <Input placeholder="Valor Venda" value={form.valorVenda} onChange={(e) => setForm({ ...form, valorVenda: e.target.value })} />
+            <Input placeholder="Referência" value={form.referencia} onChange={(e) => setForm({ ...form, referencia: e.target.value })} />
+          </div>
+          <Button onClick={addItem}>Adicionar Item</Button>
+
+          {/* Exibe o número do último item adicionado */}
+          {lastAddedId && (
+            <div className="text-lg font-semibold mt-2">
+              Último item adicionado: <span className="text-blue-600">#{lastAddedId}</span>
+            </div>
+          )}
+
+          <Input placeholder="Buscar por ID" value={search} onChange={(e) => setSearch(e.target.value)} />
+
+          {filteredItem && (
+            <Card>
+              <CardContent>
+                <p><strong>ID:</strong> {filteredItem.id}</p>
+                <p><strong>Descrição:</strong> {filteredItem.descricao}</p>
+                <p><strong>Marca:</strong> {filteredItem.marca}</p>
+                <p><strong>Valor Custo:</strong> {filteredItem.valorCusto}</p>
+                <p><strong>Valor Venda:</strong> {filteredItem.valorVenda}</p>
+                <p><strong>Referência:</strong> {filteredItem.referencia}</p>
+              </CardContent>
+            </Card>
+          )}
+        </>
+      )}
+
+      {/* Aba de Visualização de Todos os Itens */}
+      {view === "viewAll" && (
+        <div className="mt-4">
+          <h2 className="text-xl font-bold mb-2">Lista de Itens Cadastrados</h2>
+          {items.length === 0 ? (
+            <p>Nenhum item cadastrado ainda.</p>
+          ) : (
+            <table className="w-full border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border p-2">ID</th>
+                  <th className="border p-2">Descrição</th>
+                  <th className="border p-2">Marca</th>
+                  <th className="border p-2">Valor Custo</th>
+                  <th className="border p-2">Valor Venda</th>
+                  <th className="border p-2">Referência</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((item) => (
+                  <tr key={item.id} className="text-center">
+                    <td className="border p-2">{item.id}</td>
+                    <td className="border p-2">{item.descricao}</td>
+                    <td className="border p-2">{item.marca}</td>
+                    <td className="border p-2">R$ {item.valorCusto}</td>
+                    <td className="border p-2">R$ {item.valorVenda}</td>
+                    <td className="border p-2">{item.referencia}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+
+      {/* Aba de Relatórios */}
+      {view === "reports" && (
+        <div className="mt-4">
+          <h2 className="text-xl font-bold mb-2">Relatório por Referência</h2>
+          <Input placeholder="Buscar por Referência" value={searchRef} onChange={(e) => setSearchRef(e.target.value)} />
+
+          {filteredItemsByRef.length === 0 ? (
+            <p>Nenhum item encontrado para esta referência.</p>
+          ) : (
+            <table className="w-full border-collapse border border-gray-300 mt-4">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border p-2">ID</th>
+                  <th className="border p-2">Descrição</th>
+                  <th className="border p-2">Marca</th>
+                  <th className="border p-2">Valor Custo</th>
+                  <th className="border p-2">Valor Venda</th>
+                  <th className="border p-2">Referência</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredItemsByRef.map((item) => (
+                  <tr key={item.id} className="text-center">
+                    <td className="border p-2">{item.id}</td>
+                    <td className="border p-2">{item.descricao}</td>
+                    <td className="border p-2">{item.marca}</td>
+                    <td className="border p-2">R$ {item.valorCusto}</td>
+                    <td className="border p-2">R$ {item.valorVenda}</td>
+                    <td className="border p-2">{item.referencia}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
